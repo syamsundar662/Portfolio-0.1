@@ -13,8 +13,11 @@
 .project-card {
   padding: 0;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
 }
 
 .project-image {
@@ -101,9 +104,12 @@
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  transform: translateZ(0);
+  will-change: background-color, border-color, color;
+  backface-visibility: hidden;
 }
 
 .project-link:hover {

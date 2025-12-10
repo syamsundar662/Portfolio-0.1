@@ -61,7 +61,7 @@ const Skills = () => {
           {skills.map((skill, index) => (
             <motion.div
               key={index}
-              className="skill-item"
+              className="skill-chip"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -71,7 +71,7 @@ const Skills = () => {
                 ease: [0.25, 0.1, 0.25, 1]
               }}
               whileHover={{ 
-                y: -5,
+                y: -3,
                 scale: 1.05,
                 transition: { type: 'tween', duration: 0.2 }
               }}

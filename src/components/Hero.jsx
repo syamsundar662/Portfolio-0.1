@@ -180,22 +180,22 @@ const Hero = () => {
             </div>
           </div>
         </motion.div>
-
-        <motion.div
-          className="scroll-indicator"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          onClick={() => scrollToSection('about')}
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <FaArrowDown />
-          </motion.div>
-        </motion.div>
       </div>
+      
+      <motion.div
+        className="scroll-indicator"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        onClick={() => scrollToSection('about')}
+      >
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <FaArrowDown />
+        </motion.div>
+      </motion.div>
     </section>
   )
 }

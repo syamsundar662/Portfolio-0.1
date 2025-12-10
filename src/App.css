@@ -21,7 +21,10 @@
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.15;
-  animation: float 20s ease-in-out infinite;
+  transition: transform 0.1s ease-out, background 0.1s ease-out;
+  will-change: transform, background;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .orb-1 {
@@ -30,26 +33,23 @@
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   top: -200px;
   left: -200px;
-  animation-delay: 0s;
 }
 
 .orb-2 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
   bottom: -150px;
   right: -150px;
-  animation-delay: 5s;
 }
 
 .orb-3 {
   width: 350px;
   height: 350px;
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation-delay: 10s;
 }
 
 @keyframes float {

@@ -56,7 +56,9 @@
 .feature-card {
   padding: 24px;
   text-align: center;
-  transition: all 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .feature-icon {
@@ -70,7 +72,10 @@
   border-radius: 10px;
   font-size: 20px;
   color: var(--text-primary);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .feature-card:hover .feature-icon {

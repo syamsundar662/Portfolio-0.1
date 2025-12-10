@@ -6,7 +6,6 @@ import Skills from './components/Skills'
 import Timeline from './components/Timeline'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
-import ScrollProgress from './components/ScrollProgress'
 import ThemeSwitcher from './components/ThemeSwitcher'
 import './App.css'
 
@@ -27,7 +26,6 @@ function App() {
 
   return (
     <div className="app">
-      <ScrollProgress />
       <ThemeSwitcher />
       <div className="background-animation">
         <div className="gradient-orb orb-1"></div>

@@ -37,7 +37,10 @@
   width: calc(50% - 40px);
   padding: 24px;
   position: relative;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .timeline-content:hover {

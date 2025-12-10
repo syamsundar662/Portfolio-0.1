@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa'
+import emailjs from '@emailjs/browser'
 import './Contact.css'
 import './glass-card.css'
 
@@ -10,20 +11,70 @@ const Contact = () => {
     email: '',
     message: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState({ type: null, message: '' })
+
+  // EmailJS Configuration - Set these in your .env file
+  const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID
+  const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+  const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
+    // Clear status message when user starts typing
+    if (submitStatus.type) {
+      setSubmitStatus({ type: null, message: '' })
+    }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
-    alert('Thank you for your message! I will get back to you soon.')
-    setFormData({ name: '', email: '', message: '' })
+    
+    // Check if EmailJS is configured
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Email service not configured. Please contact me directly at syamsundar662@gmail.com',
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '' })
+
+    try {
+      // Send email using EmailJS
+      const result = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_email: 'syamsundar662@gmail.com',
+        },
+        EMAILJS_PUBLIC_KEY
+      )
+
+      if (result.text === 'OK') {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Thank you for your message! I will get back to you soon.',
+        })
+        setFormData({ name: '', email: '', message: '' })
+      }
+    } catch (error) {
+      console.error('EmailJS Error:', error)
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to send message. Please try again or contact me directly at syamsundar662@gmail.com',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const contactInfo = [
@@ -141,14 +192,30 @@ const Contact = () => {
               placeholder="Your Message"
             />
           </div>
+          {submitStatus.type && (
+            <div
+              className={`submit-status ${submitStatus.type === 'success' ? 'success' : 'error'}`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
           <motion.button
             type="submit"
             className="submit-btn"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            disabled={isSubmitting}
+            whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+            whileTap={!isSubmitting ? { scale: 0.98 } : {}}
             transition={{ type: 'tween', duration: 0.2 }}
           >
-            <FaPaperPlane /> Send Message
+            {isSubmitting ? (
+              <>
+                <span className="spinner"></span> Sending...
+              </>
+            ) : (
+              <>
+                <FaPaperPlane /> Send Message
+              </>
+            )}
           </motion.button>
         </motion.form>
       </div>
