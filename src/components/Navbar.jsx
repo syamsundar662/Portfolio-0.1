@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FaBars, FaTimes } from 'react-icons/fa'
+import { MdMenu, MdClose } from 'react-icons/md'
 import './Navbar.css'
 
 const Navbar = ({ scrolled }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,11 +24,39 @@ const Navbar = ({ scrolled }) => {
           }
         }
       }
+
+      // Handle navbar collapse on scroll
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY < 100) {
+        // Always show at top
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down - hide navbar
+        setIsVisible(false)
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up - show navbar
+        setIsVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [lastScrollY])
+
+  useEffect(() => {
+    // Prevent body scroll when menu is open
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
   const navItems = [
     { id: 'home', label: 'Home' },
@@ -47,12 +77,21 @@ const Navbar = ({ scrolled }) => {
 
   return (
     <motion.nav
-      className={`navbar ${scrolled ? 'scrolled' : ''}`}
+      className={`navbar ${scrolled ? 'scrolled' : ''} ${!isVisible ? 'hidden' : ''}`}
       initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
+      animate={{ 
+        y: isVisible ? 0 : -100, 
+        opacity: isVisible ? 1 : 0 
+      }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       <div className="nav-container">
+        {isOpen && (
+          <div 
+            className="nav-overlay" 
+            onClick={() => setIsOpen(false)}
+          />
+        )}
         <div className={`nav-menu ${isOpen ? 'active' : ''}`}>
           {navItems.map((item) => (
             <motion.a
@@ -72,7 +111,7 @@ const Navbar = ({ scrolled }) => {
         </div>
 
         <div className="nav-toggle" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <FaTimes /> : <FaBars />}
+          {isOpen ? <MdClose /> : <MdMenu />}
         </div>
       </div>
     </motion.nav>
