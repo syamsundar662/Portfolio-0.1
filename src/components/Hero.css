@@ -232,6 +232,10 @@
   color: #c3e88d;
 }
 
+.code-number {
+  color: #f78c6c;
+}
+
 .scroll-indicator {
   position: absolute;
   bottom: 40px;

@@ -7,7 +7,6 @@ import Timeline from './components/Timeline'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import ThemeSwitcher from './components/ThemeSwitcher'
-import ViewCounter from './components/ViewCounter'
 import './App.css'
 
 function App() {
@@ -40,7 +39,6 @@ function App() {
       <Timeline />
       <Projects />
       <Contact />
-      <ViewCounter />
     </div>
   )
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { FaGithub, FaLinkedin, FaEnvelope, FaArrowDown, FaDownload } from 'react-icons/fa'
+import { FaGithub, FaLinkedin, FaEnvelope, FaDownload } from 'react-icons/fa'
 import { supabase } from '../lib/supabase'
 import './Hero.css'
 import './glass-card.css'
@@ -8,9 +8,23 @@ import './glass-card.css'
 const Hero = () => {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [viewCount, setViewCount] = useState(null)
 
   useEffect(() => {
     fetchProfile()
+    
+    // Check if this session has already been counted
+    const sessionKey = 'portfolio_view_counted'
+    const hasBeenCounted = sessionStorage.getItem(sessionKey)
+    
+    if (!hasBeenCounted) {
+      // First visit in this session - increment
+      fetchViewCount()
+      sessionStorage.setItem(sessionKey, 'true')
+    } else {
+      // Already counted in this session - just fetch current count
+      fetchViewCountOnly()
+    }
   }, [])
 
   const fetchProfile = async () => {
@@ -26,6 +40,74 @@ const Hero = () => {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchViewCount = async () => {
+    try {
+      // Increment and get view count
+      const { data: rpcData, error: rpcError } = await supabase.rpc('increment_page_view')
+
+      if (!rpcError && rpcData !== null) {
+        setViewCount(rpcData)
+        return
+      }
+
+      // Fallback: try direct update
+      const { data: currentData } = await supabase
+        .from('page_views')
+        .select('view_count')
+        .single()
+
+      if (currentData) {
+        const newCount = (currentData.view_count || 0) + 1
+        
+        const { data: updateData, error: updateError } = await supabase
+          .from('page_views')
+          .update({ 
+            view_count: newCount,
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', '00000000-0000-0000-0000-000000000000')
+          .select('view_count')
+          .single()
+
+        if (!updateError && updateData) {
+          setViewCount(updateData.view_count)
+        } else {
+          setViewCount(currentData.view_count)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching view count:', error)
+      // Try to just get current count
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('page_views')
+          .select('view_count')
+          .single()
+
+        if (!fetchError && data) {
+          setViewCount(data.view_count)
+        }
+      } catch (err) {
+        console.error('Error fetching view count:', err)
+      }
+    }
+  }
+
+  const fetchViewCountOnly = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('page_views')
+        .select('view_count')
+        .single()
+
+      if (!error && data) {
+        setViewCount(data.view_count)
+      }
+    } catch (error) {
+      console.error('Error fetching view count:', error)
     }
   }
 
@@ -197,13 +279,21 @@ const Hero = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.55, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               >
-                <span className="code-property">passion</span>: <span className="code-string">'Building cross-platform mobile apps'</span>
+                <span className="code-property">passion</span>: <span className="code-string">'Building cross-platform mobile apps'</span>,
+              </motion.div>
+              <motion.div
+                className="code-line indent"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <span className="code-property">code</span>: <span className="code-number">{viewCount !== null ? `000${viewCount}` : '0000'}</span>
               </motion.div>
               <motion.div
                 className="code-line"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ delay: 0.65, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               >
                 {'}'};
               </motion.div>
@@ -211,21 +301,6 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
-      
-      <motion.div
-        className="scroll-indicator"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-        onClick={() => scrollToSection('about')}
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <FaArrowDown />
-        </motion.div>
-      </motion.div>
     </section>
   )
 }

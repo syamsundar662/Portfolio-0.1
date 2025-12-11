@@ -1,49 +1,69 @@
-.view-counter {
+.view-counter-disguised {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+.code-snippet-vertical {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
+  gap: 3px;
   font-size: 13px;
-  color: var(--text-secondary);
-  z-index: 1000;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0.4;
+  user-select: none;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  transition: opacity 0.3s ease;
+  line-height: 1.4;
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
 }
 
-.view-counter:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+.code-bracket {
+  color: rgba(139, 92, 246, 0.6);
+  font-weight: 400;
+  font-size: 18px;
 }
 
-.view-icon {
-  font-size: 16px;
-  filter: grayscale(0.3);
-}
-
-.view-text {
+.code-keyword {
+  color: rgba(99, 102, 241, 0.6);
   font-weight: 500;
-  letter-spacing: 0.3px;
+}
+
+.code-operator {
+  color: rgba(200, 200, 200, 0.5);
+  font-weight: 400;
+}
+
+.code-number {
+  color: rgba(236, 72, 153, 0.6);
+  font-weight: 400;
+}
+
+/* Make it look like part of background code */
+.view-counter-disguised::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: transparent;
+  z-index: -1;
 }
 
 @media (max-width: 768px) {
-  .view-counter {
-    bottom: 15px;
-    right: 15px;
-    padding: 8px 12px;
-    font-size: 12px;
+  .code-snippet-vertical {
+    font-size: 11px;
+    opacity: 0.35;
+    gap: 2px;
   }
 
-  .view-icon {
-    font-size: 14px;
+  .code-bracket {
+    font-size: 15px;
   }
 }
