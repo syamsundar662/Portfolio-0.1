@@ -1,14 +1,39 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaGithub, FaLinkedin, FaEnvelope, FaArrowDown, FaDownload } from 'react-icons/fa'
+import { supabase } from '../lib/supabase'
 import './Hero.css'
 import './glass-card.css'
 
 const Hero = () => {
-  const socialLinks = [
-    { icon: FaGithub, url: 'https://github.com/syamsundar662', label: 'GitHub' },
-    { icon: FaLinkedin, url: 'https://www.linkedin.com/in/syam-sundar-89bb60256/', label: 'LinkedIn' },
-    { icon: FaEnvelope, url: 'mailto:syamsundar662@gmail.com', label: 'Email' },
-  ]
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profile')
+        .select('*')
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const socialLinks = profile ? [
+    { icon: FaGithub, url: profile.github_url || '#', label: 'GitHub' },
+    { icon: FaLinkedin, url: profile.linkedin_url || '#', label: 'LinkedIn' },
+    { icon: FaEnvelope, url: `mailto:${profile.email || ''}`, label: 'Email' },
+  ] : []
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id)
@@ -45,7 +70,9 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            Hi, I'm <span className="gradient-text" data-text="Syam Sundar">Syam Sundar</span>
+            Hi, I'm <span className="gradient-text" data-text={profile?.full_name || 'Syam Sundar'}>
+              {profile?.full_name || 'Syam Sundar'}
+            </span>
           </motion.h1>
 
           <motion.h2
@@ -54,7 +81,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            Flutter Developer
+            {profile?.title || 'Flutter Developer'}
           </motion.h2>
 
           <motion.p
@@ -63,8 +90,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            Passionate Flutter developer building high-quality, performant mobile applications for Android, iOS, Web, and Desktop.
-            Specialized in creating elegant solutions with clean architecture and modern state management.
+            {profile?.description || 'Passionate Flutter developer building high-quality, performant mobile applications for Android, iOS, Web, and Desktop. Specialized in creating elegant solutions with clean architecture and modern state management.'}
           </motion.p>
 
           <motion.div
@@ -92,8 +118,10 @@ const Hero = () => {
               Get In Touch
             </motion.button>
             <motion.a
-              href="/cv/Syam-Sundar-CV.pdf"
+              href="https://zxhfsfrzwrcedqnpqglp.supabase.co/storage/v1/object/public/cv-files/cvs/syamsundar_cv.pdf"
               download="Syam-Sundar-CV.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn btn-secondary"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -103,13 +131,14 @@ const Hero = () => {
             </motion.a>
           </motion.div>
 
-          <motion.div
-            className="hero-social"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.35, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            {socialLinks.map((social, index) => (
+          {!loading && (
+            <motion.div
+              className="hero-social"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              {socialLinks.map((social, index) => (
               <motion.a
                 key={index}
                 href={social.url}
@@ -123,8 +152,9 @@ const Hero = () => {
               >
                 <social.icon />
               </motion.a>
-            ))}
-          </motion.div>
+              ))}
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div
@@ -151,7 +181,7 @@ const Hero = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.45, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               >
-                <span className="code-property">name</span>: <span className="code-string">'Syam Sundar'</span>,
+                <span className="code-property">name</span>: <span className="code-string">'{profile?.full_name || 'Syam Sundar'}'</span>,
               </motion.div>
               <motion.div
                 className="code-line indent"
@@ -159,7 +189,7 @@ const Hero = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               >
-                <span className="code-property">role</span>: <span className="code-string">'Flutter Developer'</span>,
+                <span className="code-property">role</span>: <span className="code-string">'{profile?.title || 'Flutter Developer'}'</span>,
               </motion.div>
               <motion.div
                 className="code-line indent"

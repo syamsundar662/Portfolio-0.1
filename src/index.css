@@ -58,3 +58,11 @@ code {
   background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
 }
 
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 16px;
+  opacity: 0.7;
+}
+

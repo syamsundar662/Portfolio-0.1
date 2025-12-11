@@ -1,56 +1,33 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa'
+import { supabase } from '../lib/supabase'
 import './Projects.css'
 import './glass-card.css'
 
 const Projects = () => {
-  const projects = [
-    {
-      title: 'Onwords Living Home',
-      description: 'A Home Assistant-powered smart home automation app with real-time device control, home sharing, automation, and scheduling features.',
-      technologies: ['Flutter', 'Dart', 'REST API', 'WebSocket', 'Firebase'],
-      github: 'https://github.com/syamsundar662',
-      demo: null,
-      published: true,
-    },
-    {
-      title: 'FLIP - Social Media App',
-      description: 'A social media platform with real-time chatting, photo sharing, follow/unfollow, likes, and comments. Built with Firebase backend and BloC architecture.',
-      technologies: ['Flutter', 'Dart', 'Firebase', 'BloC', 'Google Sign-In'],
-      github: 'https://github.com/syamsundar662/Flip',
-      demo: null,
-    },
-    {
-      title: 'TRAVISOR - Travel App',
-      description: 'An intuitive travel application for tourists to search, sort, and discover destinations worldwide with wishlist features and personalized trip planning.',
-      technologies: ['Flutter', 'Dart', 'Firebase', 'MVC Architecture'],
-      github: 'https://github.com/syamsundar662/Travisor_Travel_App',
-      demo: null,
-    },
-    {
-      title: 'Onwords Smart Things',
-      description: 'Smart home control app for managing lights, fans, ACs, and other devices with MQTT integration, Android/iOS widgets, and Siri Shortcuts.',
-      technologies: ['Flutter', 'MQTT', 'IoT', 'Widgets', 'Siri Shortcuts'],
-      github: 'https://github.com/syamsundar662',
-      demo: null,
-      published: true,
-    },
-    {
-      title: 'Weather App',
-      description: 'Location-based weather forecast app using OpenWeatherMap API with real-time data fetching and geolocation services.',
-      technologies: ['Flutter', 'Dart', 'GetX', 'OpenWeather API', 'Geolocator'],
-      github: 'https://github.com/syamsundar662',
-      demo: null,
-    },
-    {
-      title: 'MyOffice',
-      description: 'Internal office management system with role-based access control, designed for seamless office operations and management.',
-      technologies: ['Flutter', 'Dart', 'Firebase', 'Role-Based Auth'],
-      github: 'https://github.com/syamsundar662',
-      demo: null,
-      published: true,
-    },
-  ]
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('display_order', { ascending: true })
+
+      if (error) throw error
+      setProjects(data || [])
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <section id="projects" className="projects">
@@ -67,8 +44,11 @@ const Projects = () => {
         <p className="section-subtitle">Some of my recent work</p>
       </motion.div>
 
-      <div className="projects-grid">
-        {projects.map((project, index) => (
+      {loading ? (
+        <div className="loading-state">Loading projects...</div>
+      ) : (
+        <div className="projects-grid">
+          {projects.map((project, index) => (
           <motion.div
             key={index}
             className="project-card glass-card"
@@ -96,9 +76,9 @@ const Projects = () => {
                 ))}
               </div>
               <div className="project-links">
-                {project.github && (
+                {project.github_url && (
                   <a
-                    href={project.github}
+                    href={project.github_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="project-link"
@@ -107,9 +87,9 @@ const Projects = () => {
                     <FaGithub /> Code
                   </a>
                 )}
-                {project.demo && (
+                {project.demo_url && (
                   <a
-                    href={project.demo}
+                    href={project.demo_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="project-link"
@@ -124,8 +104,9 @@ const Projects = () => {
               </div>
             </div>
           </motion.div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

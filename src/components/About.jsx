@@ -1,9 +1,14 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaCode, FaRocket, FaHeart } from 'react-icons/fa'
+import { supabase } from '../lib/supabase'
 import './About.css'
 import './glass-card.css'
 
 const About = () => {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
   const features = [
     {
       icon: FaCode,
@@ -21,6 +26,26 @@ const About = () => {
       description: 'Genuine love for technology and continuous learning to stay ahead of the curve.',
     },
   ]
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profile')
+        .select('*')
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <section id="about" className="about">
@@ -45,17 +70,31 @@ const About = () => {
           viewport={{ once: true, margin: '-50px' }}
           transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <h3>Hello! I'm Syam Sundar</h3>
-          <p>
-            I'm a highly motivated and determined Flutter Developer with a passion for building high-quality mobile applications.
-            Currently working at Onwords Smart Solutions, I specialize in creating cross-platform apps for Android, iOS, Web, and Desktop from a single codebase.
-          </p>
-          <p>
-            My expertise includes developing smart home automation applications, social media platforms, and travel apps using Flutter, Dart, and modern state management solutions like BloC, GetX, and Provider. I have hands-on experience with Firebase, REST APIs, WebSocket, MQTT, and IoT integrations.
-          </p>
-          <p>
-            I'm passionate about writing clean, maintainable code following best practices and clean architecture principles. When I'm not coding, you can find me exploring new Flutter packages, contributing to open-source projects, or continuously learning to stay ahead in the mobile development space.
-          </p>
+          {loading ? (
+            <div className="loading-state">Loading...</div>
+          ) : (
+            <>
+              <h3>Hello! I'm {profile?.full_name || 'Syam Sundar'}</h3>
+              {profile?.about_text ? (
+                profile.about_text.split('\n\n').map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))
+              ) : (
+                <>
+                  <p>
+                    I'm a highly motivated and determined Flutter Developer with a passion for building high-quality mobile applications.
+                    Currently working at Onwords Smart Solutions, I specialize in creating cross-platform apps for Android, iOS, Web, and Desktop from a single codebase.
+                  </p>
+                  <p>
+                    My expertise includes developing smart home automation applications, social media platforms, and travel apps using Flutter, Dart, and modern state management solutions like BloC, GetX, and Provider. I have hands-on experience with Firebase, REST APIs, WebSocket, MQTT, and IoT integrations.
+                  </p>
+                  <p>
+                    I'm passionate about writing clean, maintainable code following best practices and clean architecture principles. When I'm not coding, you can find me exploring new Flutter packages, contributing to open-source projects, or continuously learning to stay ahead in the mobile development space.
+                  </p>
+                </>
+              )}
+            </>
+          )}
         </motion.div>
 
         <div className="about-features">

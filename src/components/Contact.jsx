@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa'
 import emailjs from '@emailjs/browser'
+import { supabase } from '../lib/supabase'
 import './Contact.css'
 import './glass-card.css'
 
@@ -46,38 +47,101 @@ const Contact = () => {
     setSubmitStatus({ type: null, message: '' })
 
     try {
-      // Send email using EmailJS
-      const result = await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-          to_email: 'syamsundar662@gmail.com',
-        },
-        EMAILJS_PUBLIC_KEY
-      )
+      // Save message to database
+      const { error: dbError } = await supabase
+        .from('contact_messages')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+          },
+        ])
 
-      if (result.text === 'OK') {
-        setSubmitStatus({
-          type: 'success',
-          message: 'Thank you for your message! I will get back to you soon.',
-        })
-        setFormData({ name: '', email: '', message: '' })
+      if (dbError) throw dbError
+
+      // Try to send email using EmailJS (optional, won't fail if not configured)
+      if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
+        try {
+          await emailjs.send(
+            EMAILJS_SERVICE_ID,
+            EMAILJS_TEMPLATE_ID,
+            {
+              from_name: formData.name,
+              from_email: formData.email,
+              message: formData.message,
+              to_email: profile?.email || 'syamsundar662@gmail.com',
+            },
+            EMAILJS_PUBLIC_KEY
+          )
+        } catch (emailError) {
+          console.warn('EmailJS Error (non-critical):', emailError)
+          // Don't fail the whole submission if email fails
+        }
       }
+
+      setSubmitStatus({
+        type: 'success',
+        message: 'Thank you for your message! I will get back to you soon.',
+      })
+      setFormData({ name: '', email: '', message: '' })
     } catch (error) {
-      console.error('EmailJS Error:', error)
+      console.error('Error submitting message:', error)
       setSubmitStatus({
         type: 'error',
-        message: 'Failed to send message. Please try again or contact me directly at syamsundar662@gmail.com',
+        message: 'Failed to send message. Please try again or contact me directly.',
       })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const contactInfo = [
+  const [profile, setProfile] = useState(null)
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profile')
+        .select('*')
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  const contactInfo = profile ? [
+    {
+      icon: FaEnvelope,
+      label: 'Email',
+      value: profile.email || 'syamsundar662@gmail.com',
+      link: `mailto:${profile.email || 'syamsundar662@gmail.com'}`,
+    },
+    ...(profile.phone_uae ? [{
+      icon: FaPhone,
+      label: 'Phone (UAE)',
+      value: profile.phone_uae,
+      link: `tel:${profile.phone_uae.replace(/\s/g, '')}`,
+    }] : []),
+    ...(profile.phone_india ? [{
+      icon: FaPhone,
+      label: 'Phone (India)',
+      value: profile.phone_india,
+      link: `tel:${profile.phone_india.replace(/\s/g, '')}`,
+    }] : []),
+    ...(profile.location ? [{
+      icon: FaMapMarkerAlt,
+      label: 'Location',
+      value: profile.location,
+      link: null,
+    }] : []),
+  ] : [
     {
       icon: FaEnvelope,
       label: 'Email',
